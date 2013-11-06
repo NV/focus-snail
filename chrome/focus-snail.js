@@ -23,6 +23,7 @@ function initialize(doc) {
 	var properties = ['top', 'right', 'bottom', 'left'];
 	for (var i = 0; i < 4; i++) {
 		var polygon = doc.createElementNS(SVGNS, 'polygon');
+		polygon.classList.add('focus-snail_polygon');
 		for (var j = 0; j < 4; j++) {
 			var point = svg.createSVGPoint();
 			polygon.points.appendItem(point);
@@ -69,7 +70,7 @@ document.documentElement.addEventListener('keydown', function(event) {
 	var code = event.which;
 	// Show animation only upon Tab or Arrow keys press.
 	if (code === 9 || (code > 36 && code < 41)) {
-		keyDownTime = now();
+		keyDownTime = Date.now();
 	}
 }, false);
 
@@ -168,7 +169,6 @@ document.documentElement.addEventListener('focus', function(event) {
 	}
 
 	onEnd();
-	target.classList.add('focus-snail_target');
 	svg.classList.add('focus-snail_visible');
 
 	prevFocused = target;
@@ -177,6 +177,7 @@ document.documentElement.addEventListener('focus', function(event) {
 	var prevLeft = 0;
 	var top = 0;
 	var prevTop = 0;
+	var isFirstCall = true;
 
 	animate(function(step) {
 		if (isFirstCall) {
@@ -193,10 +194,10 @@ document.documentElement.addEventListener('focus', function(event) {
 		);
 
 		if (step < 1) {
-			var opacity = inRange(opacityInt(step), 0, 1);
+			var opacity = inRange(opacityEasing(step), 0, 1);
 			svg.style.opacity = opacity;
 		} else {
-			svg.classList.add('focus-snail_hiding');
+			svg.style.opacity = '';
 			onEnd();
 		}
 	}, DURATION);
@@ -215,13 +216,12 @@ document.documentElement.addEventListener('focus', function(event) {
 		}, polygons);
 	}
 
-	var isFirstCall = true;
 	function setup() {
 		var scroll = scrollOffset();
 		svg.style.left = scroll.left + 'px';
 		svg.style.top = scroll.top + 'px';
-		svg.setAttribute('width', window.innerWidth /*Math.max(prev.left + prev.width, left + width) - min_x*/);
-		svg.setAttribute('height', window.innerHeight /*Math.max(prev.top + prev.height, top + height) - min_y*/);
+		svg.setAttribute('width', window.innerWidth);
+		svg.setAttribute('height', window.innerHeight);
 		left = current.left - scroll.left;
 		prevLeft = prev.left - scroll.left;
 		top = current.top - scroll.top;
@@ -236,11 +236,7 @@ function onEnd() {
 		cancelAnimationFrame(animationId);
 		animationId = 0;
 	}
-
 	svg.classList.remove('focus-snail_visible');
-	svg.classList.remove('focus-snail_transition');
-	svg.classList.remove('focus-snail_hiding');
-	prevFocused && prevFocused.classList.remove('focus-snail_target');
 	prevFocused = null;
 }
 
@@ -284,12 +280,11 @@ function animate(onStep, duration) {
 }
 
 
-function opacityInt(x) {
-	return (1 - squareOut(x)) * 0.7 + 0.1;
-}
-
 function easing(x) {
 	return 1 - (1 - Math.pow(x, 1/4));
+}
+function opacityEasing(x) {
+	return (1 - squareOut(x)) * 0.7 + 0.1;
 }
 function squareOut(x) {
 	return -x*x + 2 * x;
