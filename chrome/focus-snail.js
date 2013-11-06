@@ -6,12 +6,6 @@ var OFFSET_PX = 1;
 var MIN_WIDTH = 12;
 var MIN_HEIGHT = 8;
 
-
-var SVGNS = 'http://www.w3.org/2000/svg';
-var svg = document.createElementNS(SVGNS, 'svg');
-svg.id = 'focus-snail';
-
-
 var polygons = {
 	top: null,
 	right: null,
@@ -19,7 +13,11 @@ var polygons = {
 	left: null
 };
 
+var svg = null;
+var SVGNS = 'http://www.w3.org/2000/svg';
 function initialize(doc) {
+	svg = document.createElementNS(SVGNS, 'svg');
+	svg.id = 'focus-snail';
 	var properties = ['top', 'right', 'bottom', 'left'];
 	for (var i = 0; i < 4; i++) {
 		var polygon = doc.createElementNS(SVGNS, 'polygon');
@@ -168,6 +166,10 @@ document.documentElement.addEventListener('focus', function(event) {
 		return;
 	}
 
+	if (!svg) {
+		initialize(document);
+	}
+
 	onEnd();
 	svg.classList.add('focus-snail_visible');
 
@@ -289,5 +291,3 @@ function opacityEasing(x) {
 function squareOut(x) {
 	return -x*x + 2 * x;
 }
-
-initialize(document);
