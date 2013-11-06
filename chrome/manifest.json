@@ -1,0 +1,21 @@
+{
+	"manifest_version": 2,
+	"name": "Focus Snail",
+	"version": "1.0",
+	"description": "Leaves a trail between previous and current focused element.",
+	"content_scripts": [
+		{
+			"js": ["focus-snail.js"],
+			"css": ["focus-snail.css"],
+			"matches": [
+				"<all_urls>"
+			]
+		}
+	],
+	"icons": {
+		"48": "icon_48.png",
+		"128": "icon_128.png"
+	},
+	"author": "Nikita Vasilyev",
+	"homepage_url": "http://n12v.com/keyboard-focus-transition/"
+}

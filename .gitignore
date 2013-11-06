@@ -1,0 +1,6 @@
+# rake standalone
+standalone/focus-snail.js
+
+# rake safari
+FocusSnail.safariextension/focus-snail.css
+FocusSnail.safariextension/focus-snail.js

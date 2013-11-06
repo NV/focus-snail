@@ -1,0 +1,53 @@
+#focus-snail {
+	position: absolute;
+	top: 0;
+	left: 0;
+	margin: 0;
+	background: transparent;
+	visibility: hidden;
+	pointer-events: none;
+	/*box-shadow: 0 0 2px 3px #78aeda, 0 0 2px #78aeda inset; border-radius: 2px;*/
+	bottom: 0;
+	right: 0;
+	height: 100%;
+}
+#focus-snail.focus-snail_transition {
+	transition-duration: .3s;
+	transition-property: opacity;
+	transition-timing-function: linear;
+	/*transition-timing-function: cubic-bezier(0, 0.2, 0, 1);*/
+	opacity: 1;
+}
+#focus-snail.focus-snail_visible {
+	visibility: visible;
+	z-index: 999;
+}
+.focus-snail_target {
+	z-index: 9999;
+	position: relative;
+/* 	outline: none !important; */
+}
+
+#focus-snail.focus-snail_hiding {
+	opacity: 0;
+}
+
+/* http://stackoverflow.com/questions/71074/how-to-remove-firefoxs-dotted-outline-on-buttons-as-well-as-links/199319 */
+.focus-snail_target::-moz-focus-inner {
+	border: 0 !important;
+}
+/* Replace it with @supports rule when browsers catch up */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+	#focus-snail {
+		/* box-shadow: none; */
+		/*outline: 5px auto -webkit-focus-ring-color;*/
+		/*outline-offset: -3px;*/
+	}
+}
+
+#focus-snail polygon {
+	fill: rgb(91, 157, 217);
+	/* stroke: rgba(91, 157, 217, 0.6); */
+	stroke-width: 2px;
+	stroke-linejoin: round;
+}
