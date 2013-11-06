@@ -11,6 +11,11 @@ Focus Snail leaves a trail between previous and current focused element.
 
 Includes all necessary CSS and has no external dependencies. Build with `rake standalone`.
 
+### Browser support
+
+Tested in Chrome 28-32, Safari 6.1–7, Firefox 24, IE 10.
+Focus Snail uses SVG which is not supported in IE 8 and below.
+
 ## Safari extension
 
 Build with `rake safari`.
