@@ -11,7 +11,6 @@ var SVGNS = 'http://www.w3.org/2000/svg';
 var svg = document.createElementNS(SVGNS, 'svg');
 svg.id = 'focus-snail';
 
-var properties = ['top', 'right', 'bottom', 'left'];
 
 var polygons = {
 	top: null,
@@ -20,16 +19,19 @@ var polygons = {
 	left: null
 };
 
-for (var i = 0; i < 4; i++) {
-	var polygon = document.createElementNS(SVGNS, 'polygon');
-	for (var j = 0; j < 4; j++) {
-		var point = svg.createSVGPoint();
-		polygon.points.appendItem(point);
+function initialize(doc) {
+	var properties = ['top', 'right', 'bottom', 'left'];
+	for (var i = 0; i < 4; i++) {
+		var polygon = doc.createElementNS(SVGNS, 'polygon');
+		for (var j = 0; j < 4; j++) {
+			var point = svg.createSVGPoint();
+			polygon.points.appendItem(point);
+		}
+		svg.appendChild(polygon);
+		polygons[properties[i]] = polygon;
 	}
-	svg.appendChild(polygon);
-	polygons[properties[i]] = polygon;
+	doc.body.appendChild(svg);
 }
-document.body.appendChild(svg);
 
 
 function scrollOffset() {
@@ -240,7 +242,6 @@ function onEnd() {
 	svg.classList.remove('focus-snail_hiding');
 	prevFocused && prevFocused.classList.remove('focus-snail_target');
 	prevFocused = null;
-	polygon.style.opacity = '';
 }
 
 function now() {
@@ -293,3 +294,5 @@ function easing(x) {
 function squareOut(x) {
 	return -x*x + 2 * x;
 }
+
+initialize(document);
