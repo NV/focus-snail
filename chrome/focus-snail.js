@@ -10,7 +10,6 @@ var MIN_HEIGHT = 8;
 var SVGNS = 'http://www.w3.org/2000/svg';
 var svg = document.createElementNS(SVGNS, 'svg');
 svg.id = 'focus-snail';
-svg.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:xlink', 'http://www.w3.org/1999/xlink');
 
 var properties = ['top', 'right', 'bottom', 'left'];
 
@@ -30,8 +29,7 @@ for (var i = 0; i < 4; i++) {
 	svg.appendChild(polygon);
 	polygons[properties[i]] = polygon;
 }
-document.body.insertBefore(svg, document.body.firstChild);
-
+document.body.appendChild(svg);
 
 
 function scrollOffset() {
@@ -144,7 +142,6 @@ function addPoint(polygon, point) {
 }
 
 
-
 document.documentElement.addEventListener('focus', function(event) {
 	var target = event.target;
 	if (target.id === 'focus-snail') {
@@ -168,16 +165,11 @@ document.documentElement.addEventListener('focus', function(event) {
 		return;
 	}
 
-	var min_x = Math.min(prev.left, left);
-	var min_y = Math.min(prev.top, top);
-
 	onEnd();
 	target.classList.add('focus-snail_target');
 	svg.classList.add('focus-snail_visible');
 
 	prevFocused = target;
-
-//	var distance = Math.pow(euclideanDistance(r_l, r_left, r_t, r_top), 0.7) / 8;
 
 	var left = 0;
 	var prevLeft = 0;
@@ -190,18 +182,12 @@ document.documentElement.addEventListener('focus', function(event) {
 			isFirstCall = false;
 		}
 
-		var s = step;
-		//var p = interpolate(s);
-		//		var q = 1 - p;
-		//zoom = distance * sinInterpolate(step);
-		var e = easing(s);
+		var e = easing(step);
 		tick(
 			between(prevLeft + (prev.width - ZOOM * prev.width)  / 2, left, e),
 			between(prevTop + (prev.height - ZOOM * prev.height) / 2, top, e),
 			between(ZOOM * prev.width,  current.width,  e),
 			between(ZOOM * prev.height, current.height, e)
-			//,between(prevLeft, left, 0.9 + e/10)
-			//,between(prevTop, top, 0.9 + e/10)
 		);
 
 		if (step < 1) {
@@ -243,78 +229,7 @@ document.documentElement.addEventListener('focus', function(event) {
 }, true);
 
 
-function setPoints(points) {
-	polygon.points.clear();
-	for (var i = 0; i < points.length; i++) {
-		var pt = svg.createSVGPoint();
-		var point = points[i];
-		pt.x = point.x;
-		pt.y = point.y;
-		polygon.points.appendItem(pt);
-	}
-}
-
-
-function close3(a, b) {
-	// make a left topmost rect
-	if (b[0].x < a[0].x || b[0].x === a[0].x && b[0].y > a[0].y) {
-		var c = a;
-		a = b;
-		b = c;
-	}
-
-	var lastPoint = null;
-	var points = [];
-	function add(point) {
-		if (lastPoint && lastPoint === point) {
-			return;
-		}
-		points.push(point);
-	}
-
-	add(a[0]);
-
-	if (a[0].y > b[0].y) {
-		add(b[0]);
-		add(b[1]);
-	} else {
-		add(a[1]);
-	}
-
-	if (a[1].x > b[1].x) {
-		add(a[1]);
-		add(a[2]);
-	} else {
-		add(b[1]);
-		add(b[2]);
-	}
-
-	if (a[2].y > b[2].y) {
-		add(a[2]);
-		add(a[3]);
-	} else {
-		add(b[2]);
-		add(b[3]);
-	}
-
-	add(a[3]);
-
-	setPoints(points);
-}
-
-
-
-//document.documentElement.addEventListener('blur', function() {
-//	onEnd();
-//}, true);
-
-
 function onEnd() {
-//	if (!movingId) {
-//		return;
-//	}
-//	clearTimeout(movingId);
-//	movingId = 0;
 	if (animationId) {
 		cancelAnimationFrame(animationId);
 		animationId = 0;
@@ -326,15 +241,10 @@ function onEnd() {
 	prevFocused && prevFocused.classList.remove('focus-snail_target');
 	prevFocused = null;
 	polygon.style.opacity = '';
-
 }
 
 function now() {
 	return new Date().valueOf();
-}
-
-function euclideanDistance(x1, x2, y1, y2) {
-	return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
 function inRange(value, from, to) {
@@ -373,16 +283,8 @@ function animate(onStep, duration) {
 }
 
 
-
 function opacityInt(x) {
-//	return Math.sin(Math.PI / 2 * x + Math.PI / 2);
 	return (1 - squareOut(x)) * 0.7 + 0.1;
-//	return 1 - x * x;
-}
-
-function sinInterpolate(x) {
-	return Math.sin(Math.PI * x) * x * x * 2.5;
-//	return Math.sin(x * Math.PI) / 2;
 }
 
 function easing(x) {
@@ -390,8 +292,4 @@ function easing(x) {
 }
 function squareOut(x) {
 	return -x*x + 2 * x;
-}
-
-function interpolate(x) {
-	return (-x*x + x) * 4
 }
