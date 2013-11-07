@@ -1,10 +1,27 @@
 'use strict';
 
-var DURATION = 300;
 var ZOOM = 1;
 var OFFSET_PX = 1;
 var MIN_WIDTH = 12;
 var MIN_HEIGHT = 8;
+
+function animationDuration(distance) {
+	return Math.pow(inRange(distance, 32, 1024), 1/3) * 50;
+}
+
+function easing(x) {
+	return 1 - (1 - Math.pow(x, 1/4));
+}
+
+function opacityEasing(x) {
+	var Q = 4;
+	if (x < 1/Q) {
+		var y = Q * (-Q*x*x + 2*x);
+	} else {
+		y = Math.pow(x - 1 - 1/Q, 2);
+	}
+	return y * 0.4 + 0.2;
+}
 
 var polygons = {
 	top: null,
@@ -15,12 +32,12 @@ var polygons = {
 
 var svg = null;
 var SVGNS = 'http://www.w3.org/2000/svg';
-function initialize(doc) {
+function initialize() {
 	svg = document.createElementNS(SVGNS, 'svg');
 	svg.id = 'focus-snail';
 	var properties = ['top', 'right', 'bottom', 'left'];
 	for (var i = 0; i < 4; i++) {
-		var polygon = doc.createElementNS(SVGNS, 'polygon');
+		var polygon = document.createElementNS(SVGNS, 'polygon');
 		polygon.classList.add('focus-snail_polygon');
 		for (var j = 0; j < 4; j++) {
 			var point = svg.createSVGPoint();
@@ -29,7 +46,7 @@ function initialize(doc) {
 		svg.appendChild(polygon);
 		polygons[properties[i]] = polygon;
 	}
-	doc.body.appendChild(svg);
+	document.body.appendChild(svg);
 }
 
 
@@ -167,7 +184,7 @@ document.documentElement.addEventListener('focus', function(event) {
 	}
 
 	if (!svg) {
-		initialize(document);
+		initialize();
 	}
 
 	onEnd();
@@ -180,6 +197,9 @@ document.documentElement.addEventListener('focus', function(event) {
 	var top = 0;
 	var prevTop = 0;
 	var isFirstCall = true;
+
+	var distance = euclideanDistance(prev, current);
+	var duration = animationDuration(distance);
 
 	animate(function(step) {
 		if (isFirstCall) {
@@ -202,7 +222,7 @@ document.documentElement.addEventListener('focus', function(event) {
 			svg.style.opacity = '';
 			onEnd();
 		}
-	}, DURATION);
+	}, duration);
 
 	function tick(_left, _top, _width, _height) {
 		enclose({
@@ -246,6 +266,12 @@ function now() {
 	return new Date().valueOf();
 }
 
+function euclideanDistance(a ,b) {
+	var dx = a.left - b.left;
+	var dy = a.top - b.top;
+	return Math.sqrt(dx*dx + dy*dy);
+}
+
 function inRange(value, from, to) {
 	if (value <= from) {
 		return from;
@@ -279,15 +305,4 @@ function animate(onStep, duration) {
 			}
 		});
 	})();
-}
-
-
-function easing(x) {
-	return 1 - (1 - Math.pow(x, 1/4));
-}
-function opacityEasing(x) {
-	return (1 - squareOut(x)) * 0.7 + 0.1;
-}
-function squareOut(x) {
-	return -x*x + 2 * x;
 }
