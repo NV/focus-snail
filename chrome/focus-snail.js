@@ -24,45 +24,6 @@ function opacityEasing(x) {
 }
 
 
-var svg = null;
-var polygon = null;
-function initialize() {
-	var root = createPolygon();
-	svg = root.svg;
-	polygon = root.polygon;
-	document.body.appendChild(svg);
-}
-
-
-function scrollOffset() {
-	var win = document.defaultView;
-	var docElem = document.documentElement;
-	var body = document.body;
-	var top = win.pageYOffset || docElem.scrollTop  || body.scrollTop;
-	var left = win.pageXOffset || docElem.scrollLeft || body.scrollLeft;
-	return {
-		top: top,
-		left: left
-	};
-}
-
-function offsetOf(elem) {
-	var rect = elem.getBoundingClientRect();
-	var docElem = document.documentElement;
-	var body = document.body;
-
-	var scroll = scrollOffset();
-
-	var clientTop  = docElem.clientTop  || body.clientTop  || 0,
-		clientLeft = docElem.clientLeft || body.clientLeft || 0,
-		top  = rect.top  + scroll.top  - clientTop,
-		left = rect.left + scroll.left - clientLeft;
-
-	return {top: top, left: left};
-}
-
-var prevFocused = null;
-var isFirstFocus = true;
 var keyDownTime = 0;
 
 document.documentElement.addEventListener('keydown', function(event) {
@@ -73,10 +34,12 @@ document.documentElement.addEventListener('keydown', function(event) {
 	}
 }, false);
 
+
+var prevFocused = null;
+var isFirstFocus = true;
 var prev = null;
 var current = null;
 var animationId = 0;
-
 
 document.documentElement.addEventListener('focus', function(event) {
 	var target = event.target;
@@ -172,6 +135,27 @@ document.documentElement.addEventListener('focus', function(event) {
 }, true);
 
 
+var svg = null;
+var polygon = null;
+var start = null;
+var end = null;
+
+function initialize() {
+	var dict = htmlFragment('<svg id="focus-snail_svg" width="1000" height="800" xmlns:xlink="http://www.w3.org/1999/xlink">\
+		<linearGradient id="focus-snail_gradient" x1="0" x2="0" y1="0" y2="2">\
+			<stop id="focus-snail_start" offset="0%" stop-color="rgb(91, 157, 217)" stop-opacity="0"/>\
+			<stop id="focus-snail_end" offset="100%" stop-color="rgb(91, 157, 217)" stop-opacity="1"/>\
+		</linearGradient>\
+		<polygon id="focus-snail_polygon"/>\
+	</svg>', 'focus-snail_');
+	svg = dict.svg;
+	polygon = dict.polygon;
+	start = dict.start;
+	end = dict.end;
+	document.body.appendChild(svg);
+}
+
+
 function onEnd() {
 	if (animationId) {
 		cancelAnimationFrame(animationId);
@@ -188,6 +172,7 @@ function euclideanDistance(a ,b) {
 	return Math.sqrt(dx*dx + dy*dy);
 }
 
+
 function inRange(value, from, to) {
 	if (value <= from) {
 		return from;
@@ -197,6 +182,7 @@ function inRange(value, from, to) {
 	}
 	return value;
 }
+
 
 function between(from, to, value) {
 	if (value <= 0) {
@@ -271,23 +257,6 @@ function getPointsList(a, b) {
 }
 
 
-function createPolygon() {
-	var dict = htmlFragment('<svg id="focus-snail_svg" width="1000" height="800" xmlns:xlink="http://www.w3.org/1999/xlink">\
-		<polygon id="focus-snail_polygon"/>\
-	</svg>', 'focus-snail_');
-
-	var svg = dict.svg;
-	var polygon = dict.polygon;
-
-	var points = [];
-	for (var i = 4; i > 0; i--) {
-		var point = svg.createSVGPoint();
-		points.push(point);
-		polygon.points.appendItem(point);
-	}
-	return dict;
-}
-
 function enclose(list, polygon) {
 	polygon.points.clear();
 	for (var i = 0; i < list.length; i++) {
@@ -296,12 +265,14 @@ function enclose(list, polygon) {
 	}
 }
 
+
 function addPoint(polygon, point) {
 	var pt = svg.createSVGPoint();
 	pt.x = point.x;
 	pt.y = point.y;
 	polygon.points.appendItem(pt);
 }
+
 
 function rectPoints(rect) {
 	return [
@@ -339,4 +310,33 @@ function htmlFragment(content, prefix) {
 		result[id] = element;
 	}
 	return result;
+}
+
+
+function scrollOffset() {
+	var win = document.defaultView;
+	var docElem = document.documentElement;
+	var body = document.body;
+	var top = win.pageYOffset || docElem.scrollTop  || body.scrollTop;
+	var left = win.pageXOffset || docElem.scrollLeft || body.scrollLeft;
+	return {
+		top: top,
+		left: left
+	};
+}
+
+
+function offsetOf(elem) {
+	var rect = elem.getBoundingClientRect();
+	var docElem = document.documentElement;
+	var body = document.body;
+
+	var scroll = scrollOffset();
+
+	var clientTop  = docElem.clientTop  || body.clientTop  || 0,
+			clientLeft = docElem.clientLeft || body.clientLeft || 0,
+			top  = rect.top  + scroll.top  - clientTop,
+			left = rect.left + scroll.left - clientLeft;
+
+	return {top: top, left: left};
 }
