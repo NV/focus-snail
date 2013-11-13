@@ -1,4 +1,4 @@
-#focus-snail {
+#focus-snail_svg {
 	position: absolute;
 	top: 0;
 	right: 0;
@@ -8,13 +8,14 @@
 	background: transparent;
 	visibility: hidden;
 	pointer-events: none;
+	-webkit-transform: translateZ(0);
 }
 
-#focus-snail.focus-snail_visible {
+#focus-snail_svg.focus-snail_visible {
 	visibility: visible;
 	z-index: 999;
 }
 
-.focus-snail_polygon {
+#focus-snail_polygon {
 	fill: rgb(91, 157, 217);
 }

@@ -23,29 +23,13 @@ function opacityEasing(x) {
 	return y * 0.4 + 0.2;
 }
 
-var polygons = {
-	top: null,
-	right: null,
-	bottom: null,
-	left: null
-};
 
 var svg = null;
-var SVGNS = 'http://www.w3.org/2000/svg';
+var polygon = null;
 function initialize() {
-	svg = document.createElementNS(SVGNS, 'svg');
-	svg.id = 'focus-snail';
-	var properties = ['top', 'right', 'bottom', 'left'];
-	for (var i = 0; i < 4; i++) {
-		var polygon = document.createElementNS(SVGNS, 'polygon');
-		polygon.classList.add('focus-snail_polygon');
-		for (var j = 0; j < 4; j++) {
-			var point = svg.createSVGPoint();
-			polygon.points.appendItem(point);
-		}
-		svg.appendChild(polygon);
-		polygons[properties[i]] = polygon;
-	}
+	var root = createPolygon();
+	svg = root.svg;
+	polygon = root.polygon;
 	document.body.appendChild(svg);
 }
 
@@ -94,72 +78,6 @@ var current = null;
 var animationId = 0;
 
 
-function enclose(b, a, polygon) {
-	var connections = {
-		top: true,
-		right: true,
-		bottom: true,
-		left: true
-	};
-
-	if (a.left <= b.left) {
-		connections.left = false;
-	}
-
-	if (a.right >= b.right) {
-		connections.right = false;
-	}
-
-	if (a.top <= b.top) {
-		connections.top = false;
-	}
-
-	if (a.bottom >= b.bottom) {
-		connections.bottom = false;
-	}
-
-	function connectSide(polygon, a1, a2, b1, b2) {
-		polygon.points.clear();
-		addPoint(polygon, a1);
-		addPoint(polygon, a2);
-		addPoint(polygon, b2);
-		addPoint(polygon, b1);
-	}
-
-	var ap = [
-		{x: a.left, y: a.top},
-		{x: a.right, y: a.top},
-		{x: a.right, y: a.bottom},
-		{x: a.left, y: a.bottom}
-	];
-	var bp = [
-		{x: b.left, y: b.top},
-		{x: b.right, y: b.top},
-		{x: b.right, y: b.bottom},
-		{x: b.left, y: b.bottom}
-	];
-
-	var props = ['top', 'right', 'bottom', 'left'];
-	for (var i = 0; i < 4; i++) {
-		var j = (i + 1) % 4;
-		var side = props[i];
-		if (connections[side]) {
-			connectSide(polygon[side], ap[i], ap[j], bp[i], bp[j]);
-		} else {
-			polygon[side].points.clear();
-		}
-	}
-}
-
-
-function addPoint(polygon, point) {
-	var pt = polygon.ownerSVGElement.createSVGPoint();
-	pt.x = point.x;
-	pt.y = point.y;
-	polygon.points.appendItem(pt);
-}
-
-
 document.documentElement.addEventListener('focus', function(event) {
 	var target = event.target;
 	if (target.id === 'focus-snail') {
@@ -179,7 +97,7 @@ document.documentElement.addEventListener('focus', function(event) {
 		return;
 	}
 
-	if (now() - keyDownTime > 42) {
+	if (Date.now() - keyDownTime > 42) {
 		return;
 	}
 
@@ -188,7 +106,6 @@ document.documentElement.addEventListener('focus', function(event) {
 	}
 
 	onEnd();
-	svg.classList.add('focus-snail_visible');
 
 	prevFocused = target;
 
@@ -217,15 +134,15 @@ document.documentElement.addEventListener('focus', function(event) {
 
 		if (step < 1) {
 			var opacity = inRange(opacityEasing(step), 0, 1);
-			svg.style.opacity = opacity;
+			polygon.style.opacity = opacity;
 		} else {
-			svg.style.opacity = '';
+			polygon.style.opacity = '';
 			onEnd();
 		}
 	}, duration);
 
 	function tick(_left, _top, _width, _height) {
-		enclose({
+		var list = getPointsList({
 			top: _top,
 			right: _left + _width,
 			bottom: _top + _height,
@@ -235,7 +152,8 @@ document.documentElement.addEventListener('focus', function(event) {
 			right: left + current.width,
 			bottom: top + current.height,
 			left: left
-		}, polygons);
+		});
+		enclose(list, polygon);
 	}
 
 	function setup() {
@@ -244,6 +162,7 @@ document.documentElement.addEventListener('focus', function(event) {
 		svg.style.top = scroll.top + 'px';
 		svg.setAttribute('width', window.innerWidth);
 		svg.setAttribute('height', window.innerHeight);
+		svg.classList.add('focus-snail_visible');
 		left = current.left - scroll.left;
 		prevLeft = prev.left - scroll.left;
 		top = current.top - scroll.top;
@@ -262,9 +181,6 @@ function onEnd() {
 	prevFocused = null;
 }
 
-function now() {
-	return new Date().valueOf();
-}
 
 function euclideanDistance(a ,b) {
 	var dx = a.left - b.left;
@@ -305,4 +221,122 @@ function animate(onStep, duration) {
 			}
 		});
 	})();
+}
+
+
+function getPointsList(a, b) {
+	var x = 0;
+
+	if (a.top < b.top)
+		x = 1;
+
+	if (a.right > b.right)
+		x += 2;
+
+	if (a.bottom > b.bottom)
+		x += 4;
+
+	if (a.left < b.left)
+		x += 8;
+
+	var dict = [
+		[],
+		[0, 1],
+		[1, 2],
+		[0, 1, 2],
+		[2, 3],
+		[0, 1], // FIXME: do two polygons
+		[1, 2, 3],
+		[0, 1, 2, 3],
+		[3, 0],
+		[3, 0, 1],
+		[3, 0], // FIXME: do two polygons
+		[3, 0, 1, 2],
+		[2, 3, 0],
+		[2, 3, 0, 1],
+		[1, 2, 3, 0],
+		[0, 1, 2, 3, 0]
+	];
+
+	var points = rectPoints(a).concat(rectPoints(b));
+	var list = [];
+	var indexes = dict[x];
+	for (var i = 0; i < indexes.length; i++) {
+		list.push(points[indexes[i]]);
+	}
+	while (i--) {
+		list.push(points[indexes[i] + 4]);
+	}
+	return list;
+}
+
+
+function createPolygon() {
+	var dict = htmlFragment('<svg id="focus-snail_svg" width="1000" height="800" xmlns:xlink="http://www.w3.org/1999/xlink">\
+		<polygon id="focus-snail_polygon"/>\
+	</svg>', 'focus-snail_');
+
+	var svg = dict.svg;
+	var polygon = dict.polygon;
+
+	var points = [];
+	for (var i = 4; i > 0; i--) {
+		var point = svg.createSVGPoint();
+		points.push(point);
+		polygon.points.appendItem(point);
+	}
+	return dict;
+}
+
+function enclose(list, polygon) {
+	polygon.points.clear();
+	for (var i = 0; i < list.length; i++) {
+		var p = list[i];
+		addPoint(polygon, p);
+	}
+}
+
+function addPoint(polygon, point) {
+	var pt = svg.createSVGPoint();
+	pt.x = point.x;
+	pt.y = point.y;
+	polygon.points.appendItem(pt);
+}
+
+function rectPoints(rect) {
+	return [
+		{
+			x: rect.left,
+			y: rect.top
+		},
+		{
+			x: rect.right,
+			y: rect.top
+		},
+		{
+			x: rect.right,
+			y: rect.bottom
+		},
+		{
+			x: rect.left,
+			y: rect.bottom
+		}
+	]
+}
+
+
+function htmlFragment(content, prefix) {
+	var dummy = document.createElement('div');
+	dummy.innerHTML = content;
+	var all = dummy.querySelectorAll('*');
+	var result = {};
+	for (var i = 0; i < all.length; i++) {
+		var element = all[i];
+		var id = element.id;
+		if (prefix) {
+			id = id.slice(prefix.length);
+		}
+		result[id] = element;
+	}
+	return result;
 }
