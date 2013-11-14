@@ -17,5 +17,6 @@
 }
 
 #focus-snail_polygon {
-	fill: rgb(91, 157, 217);
+	stroke-width: 1px;
+	stroke: black;
 }

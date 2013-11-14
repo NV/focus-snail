@@ -96,15 +96,20 @@ document.documentElement.addEventListener('focus', function(event) {
 		);
 
 		if (step < 1) {
-			var opacity = inRange(opacityEasing(step), 0, 1);
-			polygon.style.opacity = opacity;
+//			var opacity = inRange(opacityEasing(step), 0, 1);
+//			polygon.style.opacity = opacity;
 		} else {
-			polygon.style.opacity = '';
+//			polygon.style.opacity = '';
 			onEnd();
 		}
 	}, duration);
 
+	var isFirstTick = true;
 	function tick(_left, _top, _width, _height) {
+		if (isFirstTick) {
+			isFirstTick = false;
+			updateGradient(_left, _top, _width, _height, left, top, current.width, current.height);
+		}
 		var list = getPointsList({
 			top: _top,
 			right: _left + _width,
@@ -135,23 +140,64 @@ document.documentElement.addEventListener('focus', function(event) {
 }, true);
 
 
+function updateGradient(ax, ay, aWidth, aHeight, bx, by, bWidth, bHeight) {
+	var midA = {
+		x: ax + aWidth / 2,
+		y: ay + aHeight / 2
+	};
+	var midB = {
+		x: bx + bWidth / 2,
+		y: by + bHeight / 2
+	};
+
+	var minX = Math.min(midA.x, midB.x);
+	var minY = Math.min(midA.y, midB.y);
+	
+	midA.x -= minX;
+	midA.y -= minY;
+	midB.x -= minX;
+	midB.y -= minY;
+
+	if (maxAt(midA, midB)) {
+		return;
+	}
+	gradient.setAttribute('x1', midA.x);
+	gradient.setAttribute('y1', midA.y);
+	gradient.setAttribute('x2', midB.x);
+	gradient.setAttribute('y2', midB.y);
+	console.log(midA, midB);
+}
+
+function maxAt(ap, bp) {
+	var max = Math.max(ap.x, ap.y, bp.x, bp.y);
+	if (max == 0) {
+		return true;
+	}
+	ap.x /= max;
+	ap.y /= max;
+	bp.x /= max;
+	bp.y /= max;
+}
+
 var svg = null;
 var polygon = null;
 var start = null;
 var end = null;
+var gradient = null;
 
 function initialize() {
 	var dict = htmlFragment('<svg id="focus-snail_svg" width="1000" height="800" xmlns:xlink="http://www.w3.org/1999/xlink">\
-		<linearGradient id="focus-snail_gradient" x1="0" x2="0" y1="0" y2="2">\
-			<stop id="focus-snail_start" offset="0%" stop-color="rgb(91, 157, 217)" stop-opacity="0"/>\
-			<stop id="focus-snail_end" offset="100%" stop-color="rgb(91, 157, 217)" stop-opacity="1"/>\
+		<linearGradient id="focus-snail_gradient" spreadMethod="repeat">\
+			<stop id="focus-snail_start" offset="0%" stop-color="red" stop-opacity="0"/>\
+			<stop id="focus-snail_end" offset="100%" stop-color="red" stop-opacity="1"/>\
 		</linearGradient>\
-		<polygon id="focus-snail_polygon"/>\
+		<polygon id="focus-snail_polygon" fill="url(#focus-snail_gradient)"/>\
 	</svg>', 'focus-snail_');
 	svg = dict.svg;
 	polygon = dict.polygon;
 	start = dict.start;
 	end = dict.end;
+	gradient = dict.gradient;
 	document.body.appendChild(svg);
 }
 
@@ -161,7 +207,7 @@ function onEnd() {
 		cancelAnimationFrame(animationId);
 		animationId = 0;
 	}
-	svg.classList.remove('focus-snail_visible');
+	//svg.classList.remove('focus-snail_visible');
 	prevFocused = null;
 }
 
