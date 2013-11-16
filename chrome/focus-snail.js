@@ -126,6 +126,11 @@ document.documentElement.addEventListener('focus', function(event) {
 }, true);
 
 
+document.documentElement.addEventListener('blur', function() {
+	onEnd();
+}, true);
+
+
 function updateGradient(ax, ay, aWidth, aHeight, bx, by, bWidth, bHeight) {
 	var midA = {
 		x: ax + aWidth / 2,
