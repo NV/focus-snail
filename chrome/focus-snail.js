@@ -4,6 +4,7 @@ var OFFSET_PX = 1;
 var MIN_WIDTH = 12;
 var MIN_HEIGHT = 8;
 
+
 function animationDuration(distance) {
 	return Math.pow(inRange(distance, 32, 1024), 1/3) * 50;
 }
@@ -13,28 +14,19 @@ function easing(x) {
 }
 
 
-var keyDownTime = 0;
-
-document.documentElement.addEventListener('keydown', function(event) {
-	var code = event.which;
-	// Show animation only upon Tab or Arrow keys press.
-	if (code === 9 || (code > 36 && code < 41)) {
-		keyDownTime = Date.now();
-	}
-}, false);
-
-
 var prevFocused = null;
 var isFirstFocus = true;
 var prev = null;
 var current = null;
 var animationId = 0;
 
-document.documentElement.addEventListener('focus', function(event) {
+var win = window;
+var doc = document;
+var docElement = doc.documentElement;
+var body = doc.body;
+
+docElement.addEventListener('focus', function(event) {
 	var target = event.target;
-	if (target.id === 'focus-snail') {
-		return;
-	}
 	var offset = offsetOf(target);
 	prev = current;
 	current = {
@@ -53,11 +45,11 @@ document.documentElement.addEventListener('focus', function(event) {
 		return;
 	}
 
-	if (!svg) {
+	if (svg) {
+		onEnd();
+	} else {
 		initialize();
 	}
-
-	onEnd();
 
 	prevFocused = target;
 
@@ -65,21 +57,20 @@ document.documentElement.addEventListener('focus', function(event) {
 	var prevLeft = 0;
 	var top = 0;
 	var prevTop = 0;
-	var isFirstCall = true;
 
 	var distance = euclideanDistance(prev, current);
 	var duration = animationDuration(distance);
 
+	var isFirstCall = true;
 	animate(function(step) {
 		if (isFirstCall) {
-			setup();
 			isFirstCall = false;
+			setup();
 		}
-
 		var e = easing(step);
 		tick(
-			between(prevLeft + (prev.width - prev.width)  / 2, left, e),
-			between(prevTop + (prev.height - prev.height) / 2, top, e),
+			between(prevLeft, left, e),
+			between(prevTop, top, e),
 			between(prev.width,  current.width,  e),
 			between(prev.height, current.height, e)
 		);
@@ -93,7 +84,7 @@ document.documentElement.addEventListener('focus', function(event) {
 	function tick(_left, _top, _width, _height) {
 		if (isFirstTick) {
 			isFirstTick = false;
-			updateGradient(_left, _top, _width, _height, left, top, current.width, current.height);
+			setGradientAngle(gradient, _left, _top, _width, _height, left, top, current.width, current.height);
 		}
 		var list = getPointsList({
 			top: _top,
@@ -113,8 +104,8 @@ document.documentElement.addEventListener('focus', function(event) {
 		var scroll = scrollOffset();
 		svg.style.left = scroll.left + 'px';
 		svg.style.top = scroll.top + 'px';
-		svg.setAttribute('width', window.innerWidth);
-		svg.setAttribute('height', window.innerHeight);
+		svg.setAttribute('width', win.innerWidth);
+		svg.setAttribute('height', win.innerHeight);
 		svg.classList.add('focus-snail_visible');
 		left = current.left - scroll.left;
 		prevLeft = prev.left - scroll.left;
@@ -125,12 +116,23 @@ document.documentElement.addEventListener('focus', function(event) {
 }, true);
 
 
-document.documentElement.addEventListener('blur', function() {
+docElement.addEventListener('blur', function() {
 	onEnd();
 }, true);
 
 
-function updateGradient(ax, ay, aWidth, aHeight, bx, by, bWidth, bHeight) {
+var keyDownTime = 0;
+
+docElement.addEventListener('keydown', function(event) {
+	var code = event.which;
+	// Show animation only upon Tab or Arrow keys press.
+	if (code === 9 || (code > 36 && code < 41)) {
+		keyDownTime = Date.now();
+	}
+}, false);
+
+
+function setGradientAngle(gradient, ax, ay, aWidth, aHeight, bx, by, bWidth, bHeight) {
 	var midA = {
 		x: ax + aWidth / 2,
 		y: ay + aHeight / 2
@@ -148,47 +150,65 @@ function updateGradient(ax, ay, aWidth, aHeight, bx, by, bWidth, bHeight) {
 	midB.x -= minX;
 	midB.y -= minY;
 
-	if (maxAt(midA, midB)) {
-		return;
-	}
+	scalePoints(midA, midB);
 	gradient.setAttribute('x1', midA.x);
 	gradient.setAttribute('y1', midA.y);
 	gradient.setAttribute('x2', midB.x);
 	gradient.setAttribute('y2', midB.y);
 }
 
-function maxAt(ap, bp) {
+function scalePoints(ap, bp) {
 	var max = Math.max(ap.x, ap.y, bp.x, bp.y);
 	if (max == 0) {
-		return true;
+		return;
 	}
 	ap.x /= max;
 	ap.y /= max;
 	bp.x /= max;
 	bp.y /= max;
-	return false;
 }
 
+
+/** @type {SVGSVGElement} */
 var svg = null;
+
+/** @type {SVGPolygonElement} */
 var polygon = null;
+
+/** @type SVGStopElement */
 var start = null;
+/** @type SVGStopElement */
 var end = null;
+
+/** @type SVGLinearGradientElement */
 var gradient = null;
 
-function initialize() {
-	var dict = htmlFragment('<svg id="focus-snail_svg" width="1000" height="800" xmlns:xlink="http://www.w3.org/1999/xlink">\
+
+
+function htmlFragment() {
+	var div = doc.createElement('div');
+	div.innerHTML = '<svg id="focus-snail_svg" width="1000" height="800" xmlns:xlink="http://www.w3.org/1999/xlink">\
 		<linearGradient id="focus-snail_gradient">\
 			<stop id="focus-snail_start" offset="0%" stop-color="rgb(91, 157, 217)" stop-opacity="0.3"/>\
 			<stop id="focus-snail_end" offset="100%" stop-color="rgb(91, 157, 217)" stop-opacity="0.7"/>\
 		</linearGradient>\
 		<polygon id="focus-snail_polygon" fill="url(#focus-snail_gradient)"/>\
-	</svg>', 'focus-snail_');
-	svg = dict.svg;
-	polygon = dict.polygon;
-	start = dict.start;
-	end = dict.end;
-	gradient = dict.gradient;
-	document.body.appendChild(svg);
+	</svg>';
+	return div;
+}
+
+function initialize() {
+	var html = htmlFragment();
+	svg = getId(html, 'svg');
+	polygon = getId(html, 'polygon');
+	start = getId(html, 'start');
+	end = getId(html, 'end');
+	gradient = getId(html, 'gradient');
+	body.appendChild(svg);
+}
+
+function getId(elem, name) {
+	return elem.querySelector('#focus-snail_' + name);
 }
 
 
@@ -196,8 +216,8 @@ function onEnd() {
 	if (animationId) {
 		cancelAnimationFrame(animationId);
 		animationId = 0;
+		svg.classList.remove('focus-snail_visible');
 	}
-	svg.classList.remove('focus-snail_visible');
 	prevFocused = null;
 }
 
@@ -303,7 +323,7 @@ function enclose(list, polygon) {
 
 
 function addPoint(polygon, point) {
-	var pt = svg.createSVGPoint();
+	var pt = polygon.ownerSVGElement.createSVGPoint();
 	pt.x = point.x;
 	pt.y = point.y;
 	polygon.points.appendItem(pt);
@@ -328,51 +348,31 @@ function rectPoints(rect) {
 			x: rect.left,
 			y: rect.bottom
 		}
-	]
-}
-
-
-function htmlFragment(content, prefix) {
-	var dummy = document.createElement('div');
-	dummy.innerHTML = content;
-	var all = dummy.querySelectorAll('*');
-	var result = {};
-	for (var i = 0; i < all.length; i++) {
-		var element = all[i];
-		var id = element.id;
-		if (prefix) {
-			id = id.slice(prefix.length);
-		}
-		result[id] = element;
-	}
-	return result;
+	];
 }
 
 
 function scrollOffset() {
-	var win = document.defaultView;
-	var docElem = document.documentElement;
-	var body = document.body;
-	var top = win.pageYOffset || docElem.scrollTop  || body.scrollTop;
-	var left = win.pageXOffset || docElem.scrollLeft || body.scrollLeft;
+	var top = win.pageYOffset || docElement.scrollTop;
+	var left = win.pageXOffset || docElement.scrollLeft;
 	return {
-		top: top,
-		left: left
+		top: top || 0,
+		left: left || 0
 	};
 }
 
 
 function offsetOf(elem) {
 	var rect = elem.getBoundingClientRect();
-	var docElem = document.documentElement;
-	var body = document.body;
-
 	var scroll = scrollOffset();
 
-	var clientTop  = docElem.clientTop  || body.clientTop  || 0,
-			clientLeft = docElem.clientLeft || body.clientLeft || 0,
-			top  = rect.top  + scroll.top  - clientTop,
-			left = rect.left + scroll.left - clientLeft;
+	var clientTop  = docElement.clientTop  || body.clientTop,
+		clientLeft = docElement.clientLeft || body.clientLeft,
+		top  = rect.top  + scroll.top  - clientTop,
+		left = rect.left + scroll.left - clientLeft;
 
-	return {top: top, left: left};
+	return {
+		top: top || 0,
+		left: left || 0
+	};
 }
