@@ -13,16 +13,6 @@ function easing(x) {
 	return 1 - (1 - Math.pow(x, 1/4));
 }
 
-function opacityEasing(x) {
-	var Q = 4;
-	if (x < 1/Q) {
-		var y = Q * (-Q*x*x + 2*x);
-	} else {
-		y = Math.pow(x - 1 - 1/Q, 2);
-	}
-	return y * 0.4 + 0.2;
-}
-
 
 var keyDownTime = 0;
 
@@ -95,11 +85,7 @@ document.documentElement.addEventListener('focus', function(event) {
 			between(ZOOM * prev.height, current.height, e)
 		);
 
-		if (step < 1) {
-//			var opacity = inRange(opacityEasing(step), 0, 1);
-//			polygon.style.opacity = opacity;
-		} else {
-//			polygon.style.opacity = '';
+		if (step >= 1) {
 			onEnd();
 		}
 	}, duration);
@@ -165,7 +151,6 @@ function updateGradient(ax, ay, aWidth, aHeight, bx, by, bWidth, bHeight) {
 	gradient.setAttribute('y1', midA.y);
 	gradient.setAttribute('x2', midB.x);
 	gradient.setAttribute('y2', midB.y);
-	console.log(midA, midB);
 }
 
 function maxAt(ap, bp) {
@@ -177,6 +162,7 @@ function maxAt(ap, bp) {
 	ap.y /= max;
 	bp.x /= max;
 	bp.y /= max;
+	return false;
 }
 
 var svg = null;
@@ -187,9 +173,9 @@ var gradient = null;
 
 function initialize() {
 	var dict = htmlFragment('<svg id="focus-snail_svg" width="1000" height="800" xmlns:xlink="http://www.w3.org/1999/xlink">\
-		<linearGradient id="focus-snail_gradient" spreadMethod="repeat">\
-			<stop id="focus-snail_start" offset="0%" stop-color="red" stop-opacity="0"/>\
-			<stop id="focus-snail_end" offset="100%" stop-color="red" stop-opacity="1"/>\
+		<linearGradient id="focus-snail_gradient">\
+			<stop id="focus-snail_start" offset="0%" stop-color="rgb(91, 157, 217)" stop-opacity="0.3"/>\
+			<stop id="focus-snail_end" offset="100%" stop-color="rgb(91, 157, 217)" stop-opacity="0.7"/>\
 		</linearGradient>\
 		<polygon id="focus-snail_polygon" fill="url(#focus-snail_gradient)"/>\
 	</svg>', 'focus-snail_');
@@ -207,7 +193,7 @@ function onEnd() {
 		cancelAnimationFrame(animationId);
 		animationId = 0;
 	}
-	//svg.classList.remove('focus-snail_visible');
+	svg.classList.remove('focus-snail_visible');
 	prevFocused = null;
 }
 
