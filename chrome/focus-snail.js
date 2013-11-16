@@ -1,6 +1,5 @@
 'use strict';
 
-var ZOOM = 1;
 var OFFSET_PX = 1;
 var MIN_WIDTH = 12;
 var MIN_HEIGHT = 8;
@@ -79,10 +78,10 @@ document.documentElement.addEventListener('focus', function(event) {
 
 		var e = easing(step);
 		tick(
-			between(prevLeft + (prev.width - ZOOM * prev.width)  / 2, left, e),
-			between(prevTop + (prev.height - ZOOM * prev.height) / 2, top, e),
-			between(ZOOM * prev.width,  current.width,  e),
-			between(ZOOM * prev.height, current.height, e)
+			between(prevLeft + (prev.width - prev.width)  / 2, left, e),
+			between(prevTop + (prev.height - prev.height) / 2, top, e),
+			between(prev.width,  current.width,  e),
+			between(prev.height, current.height, e)
 		);
 
 		if (step >= 1) {
