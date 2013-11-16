@@ -10,7 +10,7 @@ function animationDuration(distance) {
 }
 
 function easing(x) {
-	return 1 - (1 - Math.pow(x, 1/4));
+	return 1 - (1 - Math.pow(x, 1/3));
 }
 
 
