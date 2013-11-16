@@ -1,9 +1,7 @@
-document.addEventListener('DOMContentLoaded', function() {
-	if (document.getElementById('focus-snail')) return;
-
+(function() {
 	/*> ../chrome/focus-snail.js */
 
-	var style = document.createElement('style');
+	var style = doc.createElement('style');
 	style.textContent = "/*> ../chrome/focus-snail.css */";
-	document.body.appendChild(style);
-}, false);
+	body.appendChild(style);
+})();
