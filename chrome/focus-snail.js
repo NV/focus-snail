@@ -64,41 +64,34 @@ docElement.addEventListener('focus', function(event) {
 	var isFirstCall = true;
 	animate(function(step) {
 		if (isFirstCall) {
-			isFirstCall = false;
 			setup();
+			setGradientAngle(gradient, prevLeft, prevTop, prev.width, prev.height, left, top, current.width, current.height);
+			var list = getPointsList({
+				top: prevTop,
+				right: prevLeft + prev.width,
+				bottom: prevTop + prev.height,
+				left: prevLeft
+			}, {
+				top: top,
+				right: left + current.width,
+				bottom: top + current.height,
+				left: left
+			});
+			enclose(list, polygon);
 		}
+
 		var e = easing(step);
-		tick(
-			between(prevLeft, left, e),
-			between(prevTop, top, e),
-			between(prev.width,  current.width,  e),
-			between(prev.height, current.height, e)
-		);
+		var startOffset = e * 100;
+		var middleOffset = 50 + startOffset / 2;
+		start.setAttribute('offset', startOffset + '%');
+		middle.setAttribute('offset', middleOffset + '%');
 
 		if (step >= 1) {
 			onEnd();
 		}
-	}, duration);
 
-	var isFirstTick = true;
-	function tick(_left, _top, _width, _height) {
-		if (isFirstTick) {
-			isFirstTick = false;
-			setGradientAngle(gradient, _left, _top, _width, _height, left, top, current.width, current.height);
-		}
-		var list = getPointsList({
-			top: _top,
-			right: _left + _width,
-			bottom: _top + _height,
-			left: _left
-		}, {
-			top: top,
-			right: left + current.width,
-			bottom: top + current.height,
-			left: left
-		});
-		enclose(list, polygon);
-	}
+		isFirstCall = false;
+	}, duration);
 
 	function setup() {
 		var scroll = scrollOffset();
@@ -142,30 +135,31 @@ function setGradientAngle(gradient, ax, ay, aWidth, aHeight, bx, by, bWidth, bHe
 		y: by + bHeight / 2
 	};
 
-	var minX = Math.min(midA.x, midB.x);
-	var minY = Math.min(midA.y, midB.y);
-	
-	midA.x -= minX;
-	midA.y -= minY;
-	midB.x -= minX;
-	midB.y -= minY;
+	var angle = Math.atan2(midA.y - midB.y, midA.x - midB.x);
+	var line = angleToLine(angle);
 
-	scalePoints(midA, midB);
-	gradient.setAttribute('x1', midA.x);
-	gradient.setAttribute('y1', midA.y);
-	gradient.setAttribute('x2', midB.x);
-	gradient.setAttribute('y2', midB.y);
+	gradient.setAttribute('x1', line.x1);
+	gradient.setAttribute('y1', line.y1);
+	gradient.setAttribute('x2', line.x2);
+	gradient.setAttribute('y2', line.y2);
 }
 
-function scalePoints(ap, bp) {
-	var max = Math.max(ap.x, ap.y, bp.x, bp.y);
-	if (max == 0) {
-		return;
-	}
-	ap.x /= max;
-	ap.y /= max;
-	bp.x /= max;
-	bp.y /= max;
+
+function angleToLine(angle) {
+	var segment = Math.floor(angle / Math.PI * 2) + 2;
+	var diagonal = Math.PI/4 + Math.PI/2 * segment;
+
+	var od = Math.sqrt(2);
+	var op = Math.cos(Math.abs(diagonal - angle)) * od;
+	var x = op * Math.cos(angle);
+	var y = op * Math.sin(angle);
+
+	return {
+		x1: x < 0 ? 1 : 0,
+		y1: y < 0 ? 1 : 0,
+		x2: x >= 0 ? x : x + 1,
+		y2: y >= 0 ? y : y + 1
+	};
 }
 
 
@@ -179,6 +173,8 @@ var polygon = null;
 var start = null;
 /** @type SVGStopElement */
 var end = null;
+/** @type SVGStopElement */
+var middle = null;
 
 /** @type SVGLinearGradientElement */
 var gradient = null;
@@ -187,10 +183,11 @@ var gradient = null;
 
 function htmlFragment() {
 	var div = doc.createElement('div');
-	div.innerHTML = '<svg id="focus-snail_svg" width="1000" height="800" xmlns:xlink="http://www.w3.org/1999/xlink">\
+	div.innerHTML = '<svg id="focus-snail_svg" width="1000" height="800" spreadMethod="repeat" xmlns:xlink="http://www.w3.org/1999/xlink">\
 		<linearGradient id="focus-snail_gradient">\
-			<stop id="focus-snail_start" offset="0%" stop-color="rgb(91, 157, 217)" stop-opacity="0.3"/>\
-			<stop id="focus-snail_end" offset="100%" stop-color="rgb(91, 157, 217)" stop-opacity="0.7"/>\
+			<stop id="focus-snail_start" offset="0%" stop-color="rgb(91, 157, 217)" stop-opacity="0"/>\
+			<stop id="focus-snail_middle" offset="80%" stop-color="rgb(91, 157, 217)" stop-opacity="0.6"/>\
+			<stop id="focus-snail_end" offset="100%" stop-color="rgb(91, 157, 217)" stop-opacity="0.2"/>\
 		</linearGradient>\
 		<polygon id="focus-snail_polygon" fill="url(#focus-snail_gradient)"/>\
 	</svg>';
@@ -202,6 +199,7 @@ function initialize() {
 	svg = getId(html, 'svg');
 	polygon = getId(html, 'polygon');
 	start = getId(html, 'start');
+	middle = getId(html, 'middle');
 	end = getId(html, 'end');
 	gradient = getId(html, 'gradient');
 	body.appendChild(svg);
