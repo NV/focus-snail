@@ -4,13 +4,16 @@ var OFFSET_PX = 1;
 var MIN_WIDTH = 12;
 var MIN_HEIGHT = 8;
 
+var START_FRACTION = 0.4;
+var MIDDLE_FRACTION = 0.8;
 
 function animationDuration(distance) {
 	return Math.pow(inRange(distance, 32, 1024), 1/3) * 50;
 }
 
-function easing(x) {
-	return 1 - (1 - Math.pow(x, 1/3));
+
+function easeOutQuad(x) {
+	return 2*x - x*x;
 }
 
 
@@ -62,7 +65,7 @@ docElement.addEventListener('focus', function(event) {
 	var duration = animationDuration(distance);
 
 	var isFirstCall = true;
-	animate(function(step) {
+	animate(function(fraction) {
 		if (isFirstCall) {
 			setup();
 			setGradientAngle(gradient, prevLeft, prevTop, prev.width, prev.height, left, top, current.width, current.height);
@@ -80,13 +83,12 @@ docElement.addEventListener('focus', function(event) {
 			enclose(list, polygon);
 		}
 
-		var e = easing(step);
-		var startOffset = e * 100;
-		var middleOffset = 50 + startOffset / 2;
-		start.setAttribute('offset', startOffset + '%');
-		middle.setAttribute('offset', middleOffset + '%');
+		var startOffset = fraction > START_FRACTION ? easeOutQuad((fraction - MIDDLE_FRACTION) / (1 - MIDDLE_FRACTION)) : 0;
+		var middleOffset = fraction < MIDDLE_FRACTION ? easeOutQuad(fraction / MIDDLE_FRACTION) : 1;
+		start.setAttribute('offset', startOffset * 100 + '%');
+		middle.setAttribute('offset', middleOffset * 100 + '%');
 
-		if (step >= 1) {
+		if (fraction >= 1) {
 			onEnd();
 		}
 
@@ -187,7 +189,7 @@ function htmlFragment() {
 		<linearGradient id="focus-snail_gradient">\
 			<stop id="focus-snail_start" offset="0%" stop-color="rgb(91, 157, 217)" stop-opacity="0"/>\
 			<stop id="focus-snail_middle" offset="80%" stop-color="rgb(91, 157, 217)" stop-opacity="0.6"/>\
-			<stop id="focus-snail_end" offset="100%" stop-color="rgb(91, 157, 217)" stop-opacity="0.2"/>\
+			<stop id="focus-snail_end" offset="100%" stop-color="rgb(91, 157, 217)" stop-opacity="0"/>\
 		</linearGradient>\
 		<polygon id="focus-snail_polygon" fill="url(#focus-snail_gradient)"/>\
 	</svg>';
@@ -254,8 +256,8 @@ function animate(onStep, duration) {
 	(function loop() {
 		animationId = requestAnimationFrame(function() {
 			var diff = Date.now() - start;
-			var x = diff / duration;
-			onStep(x);
+			var fraction = diff / duration;
+			onStep(fraction);
 			if (diff < duration) {
 				loop();
 			}
