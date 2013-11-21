@@ -185,7 +185,7 @@ var gradient = null;
 
 function htmlFragment() {
 	var div = doc.createElement('div');
-	div.innerHTML = '<svg id="focus-snail_svg" width="1000" height="800" spreadMethod="repeat" xmlns:xlink="http://www.w3.org/1999/xlink">\
+	div.innerHTML = '<svg id="focus-snail_svg" width="1000" height="800" spreadMethod="repeat">\
 		<linearGradient id="focus-snail_gradient">\
 			<stop id="focus-snail_start" offset="0%" stop-color="rgb(91, 157, 217)" stop-opacity="0"/>\
 			<stop id="focus-snail_middle" offset="80%" stop-color="rgb(91, 157, 217)" stop-opacity="0.6"/>\
@@ -237,17 +237,6 @@ function inRange(value, from, to) {
 		return to;
 	}
 	return value;
-}
-
-
-function between(from, to, value) {
-	if (value <= 0) {
-		return from;
-	}
-	if (value >= 1) {
-		return to;
-	}
-	return from * (1 - value) + to * value;
 }
 
 
