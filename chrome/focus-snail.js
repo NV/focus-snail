@@ -1,6 +1,6 @@
 'use strict';
 
-var OFFSET_PX = 1;
+var OFFSET_PX = 0;
 var MIN_WIDTH = 12;
 var MIN_HEIGHT = 8;
 
@@ -17,10 +17,7 @@ function easeOutQuad(x) {
 }
 
 
-var prevFocused = null;
-var isFirstFocus = true;
 var prev = null;
-var current = null;
 var animationId = 0;
 
 var win = window;
@@ -28,23 +25,13 @@ var doc = document;
 var docElement = doc.documentElement;
 var body = doc.body;
 
-docElement.addEventListener('focus', function(event) {
-	var target = event.target;
-	var offset = offsetOf(target);
-	prev = current;
-	current = {
-		left: offset.left - OFFSET_PX,
-		top: offset.top - OFFSET_PX,
-		width: Math.max(MIN_WIDTH, target.offsetWidth) + 2*OFFSET_PX,
-		height: Math.max(MIN_HEIGHT, target.offsetHeight) + 2*OFFSET_PX
-	};
 
-	if (isFirstFocus) {
-		isFirstFocus = false;
+docElement.addEventListener('focus', function(event) {
+	if (!prev) {
 		return;
 	}
 
-	if (Date.now() - keyDownTime > 42) {
+	if (!isJustPressed()) {
 		return;
 	}
 
@@ -54,13 +41,13 @@ docElement.addEventListener('focus', function(event) {
 		initialize();
 	}
 
-	prevFocused = target;
-
 	var left = 0;
 	var prevLeft = 0;
 	var top = 0;
 	var prevTop = 0;
 
+	var target = event.target;
+	var current = dimensionsOf(target);
 	var distance = euclideanDistance(prev, current);
 	var duration = animationDuration(distance);
 
@@ -83,7 +70,7 @@ docElement.addEventListener('focus', function(event) {
 			enclose(list, polygon);
 		}
 
-		var startOffset = fraction > START_FRACTION ? easeOutQuad((fraction - MIDDLE_FRACTION) / (1 - MIDDLE_FRACTION)) : 0;
+		var startOffset = fraction > START_FRACTION ? easeOutQuad((fraction - START_FRACTION) / (1 - START_FRACTION)) : 0;
 		var middleOffset = fraction < MIDDLE_FRACTION ? easeOutQuad(fraction / MIDDLE_FRACTION) : 1;
 		start.setAttribute('offset', startOffset * 100 + '%');
 		middle.setAttribute('offset', middleOffset * 100 + '%');
@@ -111,8 +98,13 @@ docElement.addEventListener('focus', function(event) {
 }, true);
 
 
-docElement.addEventListener('blur', function() {
+docElement.addEventListener('blur', function(e) {
 	onEnd();
+	if (isJustPressed()) {
+		prev = dimensionsOf(e.target);
+	} else {
+		prev = null;
+	}
 }, true);
 
 
@@ -218,7 +210,11 @@ function onEnd() {
 		animationId = 0;
 		svg.classList.remove('focus-snail_visible');
 	}
-	prevFocused = null;
+}
+
+
+function isJustPressed() {
+	return Date.now() - keyDownTime < 42
 }
 
 
@@ -338,6 +334,17 @@ function rectPoints(rect) {
 			y: rect.bottom
 		}
 	];
+}
+
+
+function dimensionsOf(element) {
+	var offset = offsetOf(element);
+	return {
+		left: offset.left - OFFSET_PX,
+		top: offset.top - OFFSET_PX,
+		width: Math.max(MIN_WIDTH, element.offsetWidth) + 2*OFFSET_PX,
+		height: Math.max(MIN_HEIGHT, element.offsetHeight) + 2*OFFSET_PX
+	};
 }
 
 
