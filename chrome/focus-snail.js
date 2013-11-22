@@ -17,13 +17,33 @@ function easeOutQuad(x) {
 }
 
 
-var prev = null;
-var animationId = 0;
-
 var win = window;
 var doc = document;
 var docElement = doc.documentElement;
 var body = doc.body;
+
+var prev = null;
+var animationId = 0;
+var keyDownTime = 0;
+
+
+docElement.addEventListener('keydown', function(event) {
+	var code = event.which;
+	// Show animation only upon Tab or Arrow keys press.
+	if (code === 9 || (code > 36 && code < 41)) {
+		keyDownTime = Date.now();
+	}
+}, false);
+
+
+docElement.addEventListener('blur', function(e) {
+	onEnd();
+	if (isJustPressed()) {
+		prev = dimensionsOf(e.target);
+	} else {
+		prev = null;
+	}
+}, true);
 
 
 docElement.addEventListener('focus', function(event) {
@@ -51,7 +71,21 @@ docElement.addEventListener('focus', function(event) {
 	var distance = euclideanDistance(prev, current);
 	var duration = animationDuration(distance);
 
+	function setup() {
+		var scroll = scrollOffset();
+		svg.style.left = scroll.left + 'px';
+		svg.style.top = scroll.top + 'px';
+		svg.setAttribute('width', win.innerWidth);
+		svg.setAttribute('height', win.innerHeight);
+		svg.classList.add('focus-snail_visible');
+		left = current.left - scroll.left;
+		prevLeft = prev.left - scroll.left;
+		top = current.top - scroll.top;
+		prevTop = prev.top - scroll.top;
+	}
+
 	var isFirstCall = true;
+
 	animate(function(fraction) {
 		if (isFirstCall) {
 			setup();
@@ -82,41 +116,8 @@ docElement.addEventListener('focus', function(event) {
 		isFirstCall = false;
 	}, duration);
 
-	function setup() {
-		var scroll = scrollOffset();
-		svg.style.left = scroll.left + 'px';
-		svg.style.top = scroll.top + 'px';
-		svg.setAttribute('width', win.innerWidth);
-		svg.setAttribute('height', win.innerHeight);
-		svg.classList.add('focus-snail_visible');
-		left = current.left - scroll.left;
-		prevLeft = prev.left - scroll.left;
-		top = current.top - scroll.top;
-		prevTop = prev.top - scroll.top;
-	}
 
 }, true);
-
-
-docElement.addEventListener('blur', function(e) {
-	onEnd();
-	if (isJustPressed()) {
-		prev = dimensionsOf(e.target);
-	} else {
-		prev = null;
-	}
-}, true);
-
-
-var keyDownTime = 0;
-
-docElement.addEventListener('keydown', function(event) {
-	var code = event.which;
-	// Show animation only upon Tab or Arrow keys press.
-	if (code === 9 || (code > 36 && code < 41)) {
-		keyDownTime = Date.now();
-	}
-}, false);
 
 
 function setGradientAngle(gradient, ax, ay, aWidth, aHeight, bx, by, bWidth, bHeight) {
@@ -166,9 +167,9 @@ var polygon = null;
 /** @type SVGStopElement */
 var start = null;
 /** @type SVGStopElement */
-var end = null;
-/** @type SVGStopElement */
 var middle = null;
+/** @type SVGStopElement */
+var end = null;
 
 /** @type SVGLinearGradientElement */
 var gradient = null;
@@ -188,6 +189,7 @@ function htmlFragment() {
 	return div;
 }
 
+
 function initialize() {
 	var html = htmlFragment();
 	svg = getId(html, 'svg');
@@ -198,6 +200,7 @@ function initialize() {
 	gradient = getId(html, 'gradient');
 	body.appendChild(svg);
 }
+
 
 function getId(elem, name) {
 	return elem.querySelector('#focus-snail_' + name);
@@ -215,24 +218,6 @@ function onEnd() {
 
 function isJustPressed() {
 	return Date.now() - keyDownTime < 42
-}
-
-
-function euclideanDistance(a ,b) {
-	var dx = a.left - b.left;
-	var dy = a.top - b.top;
-	return Math.sqrt(dx*dx + dy*dy);
-}
-
-
-function inRange(value, from, to) {
-	if (value <= from) {
-		return from;
-	}
-	if (value >= to) {
-		return to;
-	}
-	return value;
 }
 
 
@@ -347,6 +332,20 @@ function dimensionsOf(element) {
 	};
 }
 
+function offsetOf(elem) {
+	var rect = elem.getBoundingClientRect();
+	var scroll = scrollOffset();
+
+	var clientTop  = docElement.clientTop  || body.clientTop,
+	clientLeft = docElement.clientLeft || body.clientLeft,
+	top  = rect.top  + scroll.top  - clientTop,
+	left = rect.left + scroll.left - clientLeft;
+
+	return {
+		top: top || 0,
+		left: left || 0
+	};
+}
 
 function scrollOffset() {
 	var top = win.pageYOffset || docElement.scrollTop;
@@ -358,17 +357,19 @@ function scrollOffset() {
 }
 
 
-function offsetOf(elem) {
-	var rect = elem.getBoundingClientRect();
-	var scroll = scrollOffset();
+function euclideanDistance(a ,b) {
+	var dx = a.left - b.left;
+	var dy = a.top - b.top;
+	return Math.sqrt(dx*dx + dy*dy);
+}
 
-	var clientTop  = docElement.clientTop  || body.clientTop,
-		clientLeft = docElement.clientLeft || body.clientLeft,
-		top  = rect.top  + scroll.top  - clientTop,
-		left = rect.left + scroll.left - clientLeft;
 
-	return {
-		top: top || 0,
-		left: left || 0
-	};
+function inRange(value, from, to) {
+	if (value <= from) {
+		return from;
+	}
+	if (value >= to) {
+		return to;
+	}
+	return value;
 }
