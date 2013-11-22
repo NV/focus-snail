@@ -28,6 +28,9 @@ var keyDownTime = 0;
 
 
 docElement.addEventListener('keydown', function(event) {
+	if (win.FOCUS_SNAIL_DISABLED) {
+		return;
+	}
 	var code = event.which;
 	// Show animation only upon Tab or Arrow keys press.
 	if (code === 9 || (code > 36 && code < 41)) {
