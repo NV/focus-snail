@@ -2,13 +2,25 @@
  * @constructor
  * @extends {Element}
  */
+function SVGElement() {}
+
+/**
+ * @type SVGSVGElement
+ */
+SVGSVGElement.prototype.ownerSVGElement;
+
+
+/**
+ * @constructor
+ * @extends {SVGElement}
+ */
 function SVGSVGElement() {}
 
 
 /**
  * @return SVGPoint
  * @nosideeffects
- * */
+ */
 SVGSVGElement.prototype.createSVGPoint = function() {};
 
 
@@ -22,14 +34,14 @@ SVGPolygonElement.prototype.points;
 
 /**
  * @constructor
- * @extends {Element}
+ * @extends {SVGElement}
  */
 function SVGLinearGradientElement() {}
 
 
 /**
  * @constructor
- * @extends {Element}
+ * @extends {SVGElement}
  */
 function SVGStopElement() {}
 
