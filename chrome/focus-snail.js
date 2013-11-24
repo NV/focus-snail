@@ -7,71 +7,32 @@ var MIN_HEIGHT = 8;
 var START_FRACTION = 0.4;
 var MIDDLE_FRACTION = 0.8;
 
-function animationDuration(distance) {
-	return Math.pow(inRange(distance, 32, 1024), 1/3) * 50;
-}
+var focusSnail = {
+	enabled: true,
+	trigger: trigger
+};
 
 
-function easeOutQuad(x) {
-	return 2*x - x*x;
-}
-
-
-var win = window;
-var doc = document;
-var docElement = doc.documentElement;
-var body = doc.body;
-
-var prev = null;
-var animationId = 0;
-var keyDownTime = 0;
-
-
-docElement.addEventListener('keydown', function(event) {
-	if (win.FOCUS_SNAIL_DISABLED) {
-		return;
-	}
-	var code = event.which;
-	// Show animation only upon Tab or Arrow keys press.
-	if (code === 9 || (code > 36 && code < 41)) {
-		keyDownTime = Date.now();
-	}
-}, false);
-
-
-docElement.addEventListener('blur', function(e) {
-	onEnd();
-	if (isJustPressed()) {
-		prev = dimensionsOf(e.target);
-	} else {
-		prev = null;
-	}
-}, true);
-
-
-docElement.addEventListener('focus', function(event) {
-	if (!prev) {
-		return;
-	}
-
-	if (!isJustPressed()) {
-		return;
-	}
-
+/**
+ * @param {Element} prevFocused
+ * @param {Element} target
+ */
+function trigger(prevFocused, target) {
 	if (svg) {
 		onEnd();
 	} else {
 		initialize();
 	}
 
+	var prev = dimensionsOf(prevFocused);
+	var current = dimensionsOf(target);
+
 	var left = 0;
 	var prevLeft = 0;
 	var top = 0;
 	var prevTop = 0;
 
-	var target = event.target;
-	var current = dimensionsOf(target);
-	var distance = euclideanDistance(prev, current);
+	var distance = dist(prev.left, prev.top, current.left, current.top);
 	var duration = animationDuration(distance);
 
 	function setup() {
@@ -118,28 +79,79 @@ docElement.addEventListener('focus', function(event) {
 
 		isFirstCall = false;
 	}, duration);
+}
 
 
+function animationDuration(distance) {
+	return Math.pow(constrain(distance, 32, 1024), 1/3) * 50;
+}
+
+
+function easeOutQuad(x) {
+	return 2*x - x*x;
+}
+
+
+var win = window;
+var doc = document;
+var docElement = doc.documentElement;
+var body = doc.body;
+
+var prevFocused = null;
+var animationId = 0;
+var keyDownTime = 0;
+
+
+docElement.addEventListener('keydown', function(event) {
+	if (!focusSnail.enabled) {
+		return;
+	}
+	var code = event.which;
+	// Show animation only upon Tab or Arrow keys press.
+	if (code === 9 || (code > 36 && code < 41)) {
+		keyDownTime = Date.now();
+	}
+}, false);
+
+
+docElement.addEventListener('blur', function(e) {
+	onEnd();
+	if (isJustPressed()) {
+		prevFocused = e.target;
+	} else {
+		prevFocused = null;
+	}
+}, true);
+
+
+docElement.addEventListener('focus', function(event) {
+	if (!prevFocused) {
+		return;
+	}
+	if (!isJustPressed()) {
+		return;
+	}
+	trigger(prevFocused, event.target);
 }, true);
 
 
 function setGradientAngle(gradient, ax, ay, aWidth, aHeight, bx, by, bWidth, bHeight) {
-	var midA = {
-		x: ax + aWidth / 2,
-		y: ay + aHeight / 2
-	};
-	var midB = {
-		x: bx + bWidth / 2,
-		y: by + bHeight / 2
-	};
-
-	var angle = Math.atan2(midA.y - midB.y, midA.x - midB.x);
+	var centroidA = rectCentroid(ax, ay, aWidth, aHeight);
+	var centroidB = rectCentroid(bx, by, bWidth, bHeight);
+	var angle = Math.atan2(centroidA.y - centroidB.y, centroidA.x - centroidB.x);
 	var line = angleToLine(angle);
-
 	gradient.setAttribute('x1', line.x1);
 	gradient.setAttribute('y1', line.y1);
 	gradient.setAttribute('x2', line.x2);
 	gradient.setAttribute('y2', line.y2);
+}
+
+
+function rectCentroid(x, y, width, height) {
+	return {
+		x: x + width / 2,
+		y: y + height / 2
+	};
 }
 
 
@@ -360,19 +372,19 @@ function scrollOffset() {
 }
 
 
-function euclideanDistance(a ,b) {
-	var dx = a.left - b.left;
-	var dy = a.top - b.top;
+function dist(x1, y1, x2, y2) {
+	var dx = x1 - x2;
+	var dy = y1 - y2;
 	return Math.sqrt(dx*dx + dy*dy);
 }
 
 
-function inRange(value, from, to) {
-	if (value <= from) {
-		return from;
+function constrain(amt, low, high) {
+	if (amt <= low) {
+		return low;
 	}
-	if (value >= to) {
-		return to;
+	if (amt >= high) {
+		return high;
 	}
-	return value;
+	return amt;
 }
