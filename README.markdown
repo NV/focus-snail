@@ -1,25 +1,35 @@
-[Flying Focus](http://github.com/NV/flying-focus/) ·
-**Focus Snail** ·
-Focus Hug (coming soon) ·
-Focus Zoom (coming soon)
+[Flying Focus](//github.com/NV/flying-focus/)
+ · **Focus Snail**
+ · [Focus Zoom](//github.com/NV/focus-zoom/)
+ · [Focus Hug](//github.com/NV/focus-hug/)
 
 ![Focus Snail icon](http://nv.github.io/focus-snail/chrome/icon_128.png)
 
-Focus Snail leaves a trail between previous and current focused element.
+## [focus-snail.js](http://nv.github.io/focus-snail/standalone/focus-snail.js)
 
-## [focus-snail.js](http://nv.github.io/focus-snail/standalone/focus-snail.js) standalone script
+To use, just include `<script src="focus-snail.js"></script>` inside either `<head>` or `<body>`.
+It includes all necessary CSS and has no external dependencies.
 
-Includes all necessary CSS and has no external dependencies. Build with `rake standalone`.
+To build from source use `rake standalone`.
 
 ### Browser support
 
 Tested in Chrome 28-32, Safari 6.1–7, Firefox 24, IE 10.
-Focus Snail uses SVG which is not supported in IE 8 and below.
+Focus Snail uses SVG which is not supported in IE version 8 and below.
 
-## Safari extension
+### API
 
-Build with `rake safari`.
+Focus Snail exposes `focusSnail` global variable.
+
+`focusSnail.trigger(prevElement, element)` manually run the effect for `prevElement` to `element`.
+
+`focusSnail.enabled = true` trigger the effect on focus event.
+
 
 ## Chrome extension
 
 No build step required; just load it as an unpacked extension from `chrome/`.
+
+## Safari extension
+
+Build with `rake safari`.
