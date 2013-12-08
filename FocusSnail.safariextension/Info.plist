@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Nikita Vasilyev</string>
 	<key>Builder Version</key>
-	<string>8537.71</string>
+	<string>9537.71</string>
 	<key>CFBundleDisplayName</key>
 	<string>Focus Snail</string>
 	<key>CFBundleIdentifier</key>
@@ -33,7 +33,7 @@
 		</array>
 	</dict>
 	<key>Description</key>
-	<string>Shows a trail between previously and currently focused element</string>
+	<string>Leaves a trail from the previously focused element.</string>
 	<key>ExtensionInfoDictionaryVersion</key>
 	<string>1.0</string>
 	<key>Permissions</key>
