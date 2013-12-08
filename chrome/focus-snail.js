@@ -115,6 +115,9 @@ docElement.addEventListener('keydown', function(event) {
 
 
 docElement.addEventListener('blur', function(e) {
+	if (!focusSnail.enabled) {
+		return;
+	}
 	onEnd();
 	if (isJustPressed()) {
 		prevFocused = e.target;
@@ -193,7 +196,7 @@ var gradient = null;
 
 function htmlFragment() {
 	var div = doc.createElement('div');
-	div.innerHTML = '<svg id="focus-snail_svg" width="1000" height="800" spreadMethod="repeat">\
+	div.innerHTML = '<svg id="focus-snail_svg" width="1000" height="800">\
 		<linearGradient id="focus-snail_gradient">\
 			<stop id="focus-snail_start" offset="0%" stop-color="rgb(91, 157, 217)" stop-opacity="0"/>\
 			<stop id="focus-snail_middle" offset="80%" stop-color="rgb(91, 157, 217)" stop-opacity="0.6"/>\
