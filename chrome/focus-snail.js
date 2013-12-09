@@ -199,7 +199,7 @@ function htmlFragment() {
 	div.innerHTML = '<svg id="focus-snail_svg" width="1000" height="800">\
 		<linearGradient id="focus-snail_gradient">\
 			<stop id="focus-snail_start" offset="0%" stop-color="rgb(91, 157, 217)" stop-opacity="0"/>\
-			<stop id="focus-snail_middle" offset="80%" stop-color="rgb(91, 157, 217)" stop-opacity="0.6"/>\
+			<stop id="focus-snail_middle" offset="80%" stop-color="rgb(91, 157, 217)" stop-opacity="0.8"/>\
 			<stop id="focus-snail_end" offset="100%" stop-color="rgb(91, 157, 217)" stop-opacity="0"/>\
 		</linearGradient>\
 		<polygon id="focus-snail_polygon" fill="url(#focus-snail_gradient)"/>\
