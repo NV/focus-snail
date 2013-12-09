@@ -14,7 +14,7 @@ To build from source use `rake standalone`.
 
 ### Browser support
 
-Tested in Chrome 28-32, Safari 6.1–7, Firefox 24, IE 10.
+Tested in Chrome 28-32, Safari 6.1–7, Firefox 24.
 Focus Snail uses SVG which is not supported in IE version 8 and below.
 
 ### API
