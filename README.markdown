@@ -26,10 +26,6 @@ Focus Snail exposes `focusSnail` global variable.
 `focusSnail.enabled = true` trigger the effect on focus event.
 
 
-## Chrome extension
+## [Chrome extension](https://chrome.google.com/webstore/detail/focus-snail/bplpobmpcnpddpabcpfnddhimhjicgpc)
 
 No build step required; just load it as an unpacked extension from `chrome/`.
-
-## Safari extension
-
-Build with `rake safari`.

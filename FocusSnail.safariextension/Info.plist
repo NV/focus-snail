@@ -47,8 +47,8 @@
 		</dict>
 	</dict>
 	<key>Update Manifest URL</key>
-	<string>http://n12v.com/keyboard-focus-transition/focus-snail.plist</string>
+	<string>http://n12v.com/focus-transition-2/focus-snail.plist</string>
 	<key>Website</key>
-	<string>http://n12v.com/keyboard-focus-transition/</string>
+	<string>http://n12v.com/focus-transition-2/</string>
 </dict>
 </plist>
