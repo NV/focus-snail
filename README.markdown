@@ -21,7 +21,7 @@ Focus Snail uses SVG which is not supported in IE version 8 and below.
 
 Focus Snail exposes `focusSnail` global variable.
 
-`focusSnail.trigger(prevElement, element)` manually run the effect for `prevElement` to `element`.
+`focusSnail.trigger(prevElement, element)` manually runs the effect for `prevElement` to `element`.
 
 `focusSnail.enabled = true` trigger the effect on focus event.
 
